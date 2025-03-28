@@ -3,15 +3,15 @@
 
 // Structures
 typedef struct {
+    double x, y, z;
+} Vector;
+
+typedef struct {
     Vector diffuse;
     Vector specular;
     double shininess;
     double reflectivity;
 } Material;
-
-typedef struct {
-    double x, y, z;
-} Vector;
 
 typedef struct {
     Vector origin, direction;
@@ -169,7 +169,7 @@ Vector trace_ray(Ray ray, int depth)
         Vector normal = vec_normalize(vec_sub(hit_point, hit_sphere->center));
 
         Vector light_dir = vec_normalize(vec_sub(light.position, hit_point));
-        Vector ambient = vec_mul(hit_sphere->color, 0.1);
+        Vector ambient = vec_mul(hit_sphere->material.diffuse, 0.1);
 
         Vector adjusted_point = vec_add(hit_point, vec_mul(normal, EPSILON));  // Push point slightly along normal
         int in_shadow = is_in_shadow(adjusted_point, light_dir);
@@ -201,14 +201,14 @@ Vector trace_ray(Ray ray, int depth)
         Vector normal = plane.normal;
 
         Vector light_dir = vec_normalize(vec_sub(light.position, hit_point));
-        Vector ambient = vec_mul(plane.color, 0.1);
+        Vector ambient = vec_mul(plane.material.diffuse, 0.1);
 
         Vector adjusted_point = vec_add(hit_point, vec_mul(plane.normal, EPSILON));
         int in_shadow = is_in_shadow(adjusted_point, light_dir);
         if (in_shadow) return ambient;
 
         double diffuse_intensity = fmax(0, vec_dot(normal, light_dir));
-        Vector diffuse = vec_mul(vec_hadamard(plane.color, light.color), diffuse_intensity);
+        Vector diffuse = vec_mul(vec_hadamard(plane.material.diffuse, light.color), diffuse_intensity);
 
         color = vec_add(ambient, diffuse);
         }
