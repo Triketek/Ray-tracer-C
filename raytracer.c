@@ -141,7 +141,8 @@ int is_in_shadow(Vector point, Vector light_dir) {
 }
 
 // Ray tracing
-Vector trace_ray(Ray ray, int depth) {
+Vector trace_ray(Ray ray, int depth) 
+{
     Sphere *hit_sphere = NULL;
     Plane *hit_plane = NULL;
     double t_min = 1e6, t;
@@ -162,7 +163,8 @@ Vector trace_ray(Ray ray, int depth) {
         hit_sphere = NULL;
     }
 
-    if (hit_sphere) {
+    if (hit_sphere) 
+    {
         Vector hit_point = vec_add(ray.origin, vec_mul(ray.direction, t_min));
         Vector normal = vec_normalize(vec_sub(hit_point, hit_sphere->center));
 
@@ -174,10 +176,27 @@ Vector trace_ray(Ray ray, int depth) {
         if (in_shadow) return ambient;
 
         double diffuse_intensity = fmax(0, vec_dot(normal, light_dir));
-        Vector diffuse = vec_mul(vec_hadamard(hit_sphere->color, light.color), diffuse_intensity);
+    Vector diffuse = vec_mul(vec_hadamard(hit_sphere->material.diffuse, light.color), diffuse_intensity);
 
-        color = vec_add(ambient, diffuse);
-    } else if (hit_plane) {
+    // ====== NEW SPECULAR CODE STARTS HERE ======
+    // Calculate reflection vector
+    Vector view_dir = vec_normalize(vec_sub(ray.origin, hit_point));
+    Vector reflect_dir = vec_sub(
+        vec_mul(normal, 2 * vec_dot(light_dir, normal)), 
+        light_dir
+    );
+    reflect_dir = vec_normalize(reflect_dir);
+
+    // Compute specular component
+    double spec = pow(fmax(vec_dot(reflect_dir, view_dir), 0.0), hit_sphere->material.shininess);
+    Vector specular = vec_mul(vec_hadamard(hit_sphere->material.specular, light.color), spec);
+    // ====== NEW SPECULAR CODE ENDS HERE ======
+
+    // Combine all lighting components
+    color = vec_add(ambient, vec_add(diffuse, specular));  // Updated line
+    
+    } else if (hit_plane) 
+        {
         Vector hit_point = vec_add(ray.origin, vec_mul(ray.direction, t_min));
         Vector normal = plane.normal;
 
@@ -192,7 +211,7 @@ Vector trace_ray(Ray ray, int depth) {
         Vector diffuse = vec_mul(vec_hadamard(plane.color, light.color), diffuse_intensity);
 
         color = vec_add(ambient, diffuse);
-    }
+        }
 
     return color;
 }
