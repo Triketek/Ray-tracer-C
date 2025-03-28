@@ -3,6 +3,13 @@
 
 // Structures
 typedef struct {
+    Vector diffuse;
+    Vector specular;
+    double shininess;
+    double reflectivity;
+} Material;
+
+typedef struct {
     double x, y, z;
 } Vector;
 
@@ -11,12 +18,14 @@ typedef struct {
 } Ray;
 
 typedef struct {
-    Vector center, color;
+    Vector center;
+    Material material;
     double radius;
 } Sphere;
 
 typedef struct {
-    Vector position, normal, color;
+    Vector position, normal;
+    Material material;
 } Plane;
 
 typedef struct {
@@ -42,12 +51,12 @@ Vector trace_ray(Ray ray, int depth);
 
 // Global variables
 Sphere spheres[] = {
-    {{0, -0.5, 3}, {1, 0, 0}, 0.5},
-    {{-1, -0.5, 4}, {0, 1, 0}, 0.5},
-    {{1, -0.5, 4}, {0, 0, 1}, 0.5}
+    {{0, -0.5, 3}, {{1,0,0}, {0.5,0.5,0.5}, 32, 0.5}, 0.5},
+    {{-1, -0.5, 4}, {{0,1,0}, {0.5,0.5,0.5}, 32, 0.5}, 0.5},
+    {{1, -0.5, 4}, {{0,0,1}, {0.5,0.5,0.5}, 32, 0.5}, 0.5}
 };
 
-Plane plane = {{0, -1, 0}, {0, 1, 0}, {0.3, 0.3, 0.3}}; // Floor at y = -1, facing upwards
+Plane plane = {{0, -1, 0}, {0,1,0}, {{0.3,0.3,0.3}, {0.2,0.2,0.2}, 16, 0.0}};
 
 Light light = {{2, 5, 0}, {1, 1, 1}};
 
